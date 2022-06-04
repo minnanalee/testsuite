@@ -10,14 +10,28 @@ data:
         protocols:
           grpc:
     processors:
+      batch:
     exporters:
       logging:
+      prometheus:
+        endpoint: "0.0.0.0:8889"
+        const_labels:
+          label1: otel_prom_exptr
+      jaeger:
+        endpoint: jaeger-all-in-one:14250
+        tls:
+          insecure: true
     service:
       pipelines:
         traces:
           receivers: [otlp]
-          processors: []
-          exporters: [logging]
+          processors: [batch]
+          exporters: [logging,jaeger]
+        metrics:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [prometheus]
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -37,10 +51,16 @@ spec:
         - name: otelcol
           args:
             - --config=/conf/collector.yaml
-          image: otel/opentelemetry-collector:0.18.0
+          #image: otel/opentelemetry-collector:0.18.0
+          image: otel/opentelemetry-collector-contrib-dev:latest
+          imagePullPolicy: IfNotPresent
           volumeMounts:
             - mountPath: /conf
               name: collector-config
+          ports:
+            - containerPort: 8888
+            - containerPort: 8889
+            - containerPort: 4317
       volumes:
         - configMap:
             items:
@@ -48,6 +68,8 @@ spec:
                 path: collector.yaml
             name: collector-config
           name: collector-config
+
+
 ---
 apiVersion: v1
 kind: Service
@@ -59,6 +81,17 @@ spec:
       port: 4317
       protocol: TCP
       targetPort: 4317
+      nodePort: 30017
+    - name: grpc-prom1
+      port: 8889
+      protocol: TCP
+      targetPort: 8889
+    - name: grpc-prom2
+      port: 8888
+      protocol: TCP
+      targetPort: 8888
+
+
   selector:
     app.kubernetes.io/name: opentelemetrycollector
-  type: ClusterIP
+  type: NodePort
