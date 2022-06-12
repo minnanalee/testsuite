@@ -1,3 +1,4 @@
+#
 scp root@192.168.1.35:/etc/kubernetes/admin.conf "C:\Users\zhang\.kube\config"
 export KUBECONFIG=~/.kube/admin.conf
 kubectl config set-context kind-kind --cluster=kind-kind --namespace=devops --user=kind-kind
