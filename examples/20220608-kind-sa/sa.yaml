@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: test-robot
+  namespace: devops
+secrets:
+  - name: build-robot-secret
