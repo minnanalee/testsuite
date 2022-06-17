@@ -1,9 +1,13 @@
+//隐藏move菜单功能
+//jira-administrators,和项目administrators是白名单
+
 import com.atlassian.jira.ComponentManager
 import com.atlassian.jira.project.Project
 import com.atlassian.jira.project.ProjectManager
 import com.atlassian.jira.security.roles.ProjectRole
 import com.atlassian.jira.security.roles.ProjectRoleActors
 import com.atlassian.jira.security.roles.ProjectRoleManager
+
 
 if (ComponentAccessor.getGroupManager().getGroupsForUser(currentUser)?.find { it.name == "jira-administrators" }) {
     return false
